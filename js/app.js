@@ -2,28 +2,50 @@ App = Ember.Application.create();
 
 App.Router.map(function() {
     this.resource('about');
-    this.resource('posts');
-    this.resource('post', { path:':post_id' });
+    this.resource('posts', function() {
+	this.resource('post', { path:':post_id' });
+    });
 });
 
 App.PostsRoute = Ember.Route.extend({
     model: function() {
-	return posts;
+	return $.getJSON('http://localhost:9000/preview').then(function(data){
+	    return data.posts.map(function(post) {
+		post.body = post.;
+		return post;
+	    });
+	});
     }
 });
 
-var posts = [{
-    id: '1',
-    title: "who I am",
-    author: { name: "ocean" },
-    date: new Date('12-3-2014'),
-    excerpt: "this is a brief intro of myself",
-    body: "I was born in Tianjin, China. I was planning to be a biologist but end up be a coder."
-}, {
-    id: '2',
-    title: "why am I making this",
-    author: { name: "ocean" },
-    date: new Date('12-4-2014'),
-    excerpt: "the reason for me to build this site",
-    body: "I want to use this blog to show people how much I learnt, how much I love data and how much I love my gf!"
-}];
+App.PostRoute = Ember.Route.extend({
+    model: function(params) {
+//	return posts.findBy('id', params.post_id);
+	return $.getJSON('http://localhost:9000/blog/'+params.post_id).then(function(data){
+	    data.post.body = data.post.content;
+	    return data.post;
+	});
+    }
+});
+
+App.PostController = Ember.ObjectController.extend({
+    isEditing : false,
+
+    actions: {
+	edit: function() {
+	    this.set('isEditing', true);
+	},
+	doneEditing: function() {
+	    this.set('isEditing', false);
+	}
+    }
+});
+
+Ember.Handlebars.helper('format-date', function(date) {
+    return moment(date).fromNow();
+});
+
+var showdown = new Showdown.converter();
+Ember.Handlebars.helper('format-markdown', function(input) {
+    return new Handlebars.SafeString(showdown.makeHtml(input));
+});

@@ -36,8 +36,8 @@
 
     <script type="text/x-handlebars" id="posts">
       <div class="container-fluid">
-	<div class="row-fluid">
-	  <div class="span3">
+	<div class="row">
+	  <div class="col-md-3">
 	    <table class='table'>
 	      <thead>
 		<tr><th>Recent Posts</th></tr>
@@ -46,14 +46,14 @@
 		{{#each}}
 		<tr><td>
 		  {{#link-to 'post' this}}
-		    {{title}} <small class='text-muted'>by {{author.name}}</small>
+		    {{title}} <small class='text-muted'>at {{created}}</small>
 		  {{/link-to}}
 		</td></tr>
 		{{/each}}
 	      </tbody>
 	    </table>
 	  </div>
-	  <div class="span9">
+	  <div class="col-md-9">
 	    {{outlet}}
 	  </div>
 	</div>
@@ -61,17 +61,25 @@
     </script>
 
     <script type="text/x-handlebars" id="post">
+      {{#if isEditing}}
+      {{partial 'post/edit'}}
+      <button {{action 'doneEditing'}}>Done</button>
+      {{else}}
+      <button {{action 'edit'}}>Edit</button>
+      {{/if}}      
       <h1>{{title}}</h1>
-      <h2>by {{author.name}} <small class='muted-text'>({{date}})</small></h2>
+      <h2>by {{author.name}} <small class='muted-text'>({{format-date date}})</small></h2>
       <hr>
-      <div class='intro'>
-	{{excerpt}}
-      </div>
       <div class='below-the-fold'>
-	{{body}}
+	{{format-markdown body}}
       </div>
     </script>
 
+    <script type="text/x-handlebars" id="post/_edit">
+      <p>{{input type="text" value=title}}</p>
+      <p>{{input type="text" value=excerpt}}</p>
+      <p>{{textarea value=body}}</p>
+    </script>
 
     <script src="js/libs/jquery-1.10.2.js"></script>
     <script src="js/libs/handlebars-1.1.2.js"></script>
